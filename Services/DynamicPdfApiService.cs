@@ -28,19 +28,16 @@ namespace PdfGeneratorApiApp.Services
             }
 
             var pdf = new Pdf();
-
-            // W API v1.11.0 wszystkie instrukcje dodaje się do obiektu PdfInstructions
-            var instructions = pdf.Instructions;
             var itemToInputMap = new Dictionary<TocItem, Input>();
 
             // Faza 1: Utwórz wszystkie strony z treścią jako PageInput.
-            // Na tym etapie jeszcze nie dodajemy ich do instrukcji.
             var pageInputs = new List<PageInput>();
             foreach (var item in Flatten(tocItems))
             {
                 var pageInput = new PageInput();
                 string content = $"To jest treść strony dla: '{item.DisplayText}'.\n\nURL: {item.Url}";
-                pageInput.Elements.Add(new TextElement(content, ElementPlacement.TopLeft, 54, 54));
+                // POPRAWKA: Użycie pełnej nazwy typu 'DynamicPDF.Api.TextElement' i 'DynamicPDF.Api.ElementPlacement'
+                pageInput.Elements.Add(new DynamicPDF.Api.TextElement(content, DynamicPDF.Api.ElementPlacement.TopLeft, 54, 54));
                 itemToInputMap[item] = pageInput;
                 pageInputs.Add(pageInput);
             }
@@ -53,28 +50,28 @@ namespace PdfGeneratorApiApp.Services
                 if (layoutData != null)
                 {
                     var dlexResource = new DlexResource("Resources/qr-code-template.dlex");
-                    // W API v1.11.0 dane przekazuje się przez LayoutDataResource
                     var layoutDataResource = new LayoutDataResource(JsonSerializer.Serialize(layoutData));
                     dlexInput = new DlexInput(dlexResource, layoutDataResource);
                 }
             }
 
+            // POPRAWKA: W API v1.11.0 instrukcje dodaje się bezpośrednio do obiektu Pdf, a nie do pdf.Instructions.
             // Faza 3: Złóż dokument w odpowiedniej kolejności.
             if (isTocAtStart && dlexInput != null)
             {
-                instructions.Inputs.Add(dlexInput);
+                pdf.Inputs.Add(dlexInput);
             }
             foreach (var page in pageInputs)
             {
-                instructions.Inputs.Add(page);
+                pdf.Inputs.Add(page);
             }
             if (!isTocAtStart && dlexInput != null)
             {
-                instructions.Inputs.Add(dlexInput);
+                pdf.Inputs.Add(dlexInput);
             }
 
             // Faza 4: Rekurencyjnie zbuduj hierarchię zakładek (Outlines).
-            AddOutlinesRecursively(instructions.Outlines, tocItems, itemToInputMap);
+            AddOutlinesRecursively(pdf.Outlines, tocItems, itemToInputMap);
 
             // Faza 5: Wyślij instrukcje do API i przetwórz odpowiedź.
             var response = await pdf.ProcessAsync();
@@ -94,19 +91,19 @@ namespace PdfGeneratorApiApp.Services
         {
             foreach (var item in items)
             {
-                var targetInput = itemToInputMap[item];
-
-                // W API v1.11.0 akcję GoToAction dodaje się bezpośrednio w metodzie Add
-                var outline = parentOutlines.Add(item.DisplayText, targetInput);
-
-                if (item.Children.Any())
+                if (itemToInputMap.TryGetValue(item, out var targetInput))
                 {
-                    AddOutlinesRecursively(outline.Children, item.Children, itemToInputMap);
+                    // POPRAWKA: W API v1.11.0 akcję GoToAction dodaje się bezpośrednio w metodzie Add
+                    var outline = parentOutlines.Add(item.DisplayText, targetInput);
+
+                    if (item.Children.Any())
+                    {
+                        AddOutlinesRecursively(outline.Children, item.Children, itemToInputMap);
+                    }
                 }
             }
         }
 
-        // Ta metoda zwraca obiekt anonimowy, który zostanie zserializowany do JSON
         private object? CreateQrCodeLayoutData(IEnumerable<TocItem> tocItems)
         {
             var urls = Flatten(tocItems)
