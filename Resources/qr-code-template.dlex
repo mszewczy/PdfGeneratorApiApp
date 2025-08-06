@@ -1,0 +1,49 @@
+﻿{
+    "pages": [
+        {
+            "elements": [
+                {
+                    "type": "pageNumbering",
+                    "text": "Strona %%SP%% z %%ST%%",
+                    "x": 0,
+                    "y": 810,
+                    "width": 595,
+                    "align": "center",
+                    "font": "Helvetica"
+                },
+                {
+                    "type": "text",
+                    "text": "Tabela kodów QR",
+                    "x": 50,
+                    "y": 50,
+                    "font": "Helvetica-Bold",
+                    "fontSize": 24
+                }
+            ],
+            "records": [
+                {
+                    "name": "QrCodeData",
+                    "height": 100,
+                    "elements": [
+                        {
+                            "type": "text",
+                            "text": "%%description%%",
+                            "x": 50,
+                            "y": 0,
+                            "width": 300,
+                            "font": "Helvetica",
+                            "fontSize": 12
+                        },
+                        {
+                            "type": "qrCode",
+                            "value": "%%url%%",
+                            "x": 400,
+                            "y": 0,
+                            "height": 90
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
