@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace PdfGeneratorApiApp.Services
@@ -28,46 +29,54 @@ namespace PdfGeneratorApiApp.Services
 
             var pdf = new Pdf();
 
-            // Mapa do przechowywania powiązania między modelem a jego wejściem PDF, kluczowe dla tworzenia zakładek.
+            // W API v1.11.0 wszystkie instrukcje dodaje się do obiektu PdfInstructions
+            var instructions = pdf.Instructions;
             var itemToInputMap = new Dictionary<TocItem, Input>();
 
-            // Faza 1: Utwórz wszystkie strony z treścią jako PageInput i dodaj je do PDF.
-            var flatList = Flatten(tocItems).ToList();
-            foreach (var item in flatList)
+            // Faza 1: Utwórz wszystkie strony z treścią jako PageInput.
+            // Na tym etapie jeszcze nie dodajemy ich do instrukcji.
+            var pageInputs = new List<PageInput>();
+            foreach (var item in Flatten(tocItems))
             {
-                var pageInput = pdf.AddPage();
+                var pageInput = new PageInput();
                 string content = $"To jest treść strony dla: '{item.DisplayText}'.\n\nURL: {item.Url}";
                 pageInput.Elements.Add(new TextElement(content, ElementPlacement.TopLeft, 54, 54));
-                itemToInputMap[item] = pageInput; // Zapisz powiązanie.
+                itemToInputMap[item] = pageInput;
+                pageInputs.Add(pageInput);
             }
 
-            // Faza 2: Rekurencyjnie zbuduj hierarchię zakładek (Outlines), używając mapy.
-            AddOutlinesRecursively(pdf.Outlines, tocItems, itemToInputMap);
-
-            // Faza 3: (Opcjonalnie) Przygotuj i dodaj stronę z tabelą kodów QR na podstawie szablonu DLEX.
+            // Faza 2: (Opcjonalnie) Przygotuj DlexInput dla tabeli z kodami QR.
+            DlexInput? dlexInput = null;
             if (generateQrCodeTable)
             {
                 var layoutData = CreateQrCodeLayoutData(tocItems);
-                // POPRAWKA BŁĘDU CS0019: Poprawne sprawdzanie wartości null.
-                if (layoutData is not null)
+                if (layoutData != null)
                 {
-                    // POPRAWKA BŁĘDU CS1503: Użycie DlexResource i poprawnego konstruktora DlexInput.
                     var dlexResource = new DlexResource("Resources/qr-code-template.dlex");
-                    var dlexInput = new DlexInput(dlexResource, layoutData);
-
-                    if (isTocAtStart)
-                    {
-                        // Wstawia DLEX na początku listy instrukcji.
-                        pdf.Inputs.Insert(0, dlexInput);
-                    }
-                    else
-                    {
-                        pdf.Inputs.Add(dlexInput);
-                    }
+                    // W API v1.11.0 dane przekazuje się przez LayoutDataResource
+                    var layoutDataResource = new LayoutDataResource(JsonSerializer.Serialize(layoutData));
+                    dlexInput = new DlexInput(dlexResource, layoutDataResource);
                 }
             }
 
-            // Faza 4: Wyślij instrukcje do API i przetwórz odpowiedź.
+            // Faza 3: Złóż dokument w odpowiedniej kolejności.
+            if (isTocAtStart && dlexInput != null)
+            {
+                instructions.Inputs.Add(dlexInput);
+            }
+            foreach (var page in pageInputs)
+            {
+                instructions.Inputs.Add(page);
+            }
+            if (!isTocAtStart && dlexInput != null)
+            {
+                instructions.Inputs.Add(dlexInput);
+            }
+
+            // Faza 4: Rekurencyjnie zbuduj hierarchię zakładek (Outlines).
+            AddOutlinesRecursively(instructions.Outlines, tocItems, itemToInputMap);
+
+            // Faza 5: Wyślij instrukcje do API i przetwórz odpowiedź.
             var response = await pdf.ProcessAsync();
 
             if (response.IsSuccessful)
@@ -81,32 +90,24 @@ namespace PdfGeneratorApiApp.Services
             }
         }
 
-        // Metoda do rekurencyjnego tworzenia zakładek zgodnie z nowym API.
         private void AddOutlinesRecursively(OutlineList parentOutlines, IEnumerable<TocItem> items, IReadOnlyDictionary<TocItem, Input> itemToInputMap)
         {
             foreach (var item in items)
             {
                 var targetInput = itemToInputMap[item];
 
-                // POPRAWKA BŁĘDÓW CS1729, CS0117, CS1503:
-                // 1. Użycie konstruktora Outline z tekstem.
-                // 2. Ustawienie właściwości Action na obiekt GoToAction, który wskazuje na Input, a nie numer strony.
-                var outline = new Outline(item.DisplayText)
-                {
-                    Action = new GoToAction(targetInput)
-                };
-                parentOutlines.Add(outline);
+                // W API v1.11.0 akcję GoToAction dodaje się bezpośrednio w metodzie Add
+                var outline = parentOutlines.Add(item.DisplayText, targetInput);
 
-                // POPRAWKA OSTRZEŻENIA CA1860: Użycie .Count > 0 zamiast .Any() dla kolekcji.
-                if (item.Children.Count > 0)
+                if (item.Children.Any())
                 {
                     AddOutlinesRecursively(outline.Children, item.Children, itemToInputMap);
                 }
             }
         }
 
-        // POPRAWKA BŁĘDU CS0246: Poprawny typ zwracany to LayoutData?
-        private LayoutData? CreateQrCodeLayoutData(IEnumerable<TocItem> tocItems)
+        // Ta metoda zwraca obiekt anonimowy, który zostanie zserializowany do JSON
+        private object? CreateQrCodeLayoutData(IEnumerable<TocItem> tocItems)
         {
             var urls = Flatten(tocItems)
                 .Where(item => !string.IsNullOrWhiteSpace(item.Url))
@@ -114,11 +115,9 @@ namespace PdfGeneratorApiApp.Services
                 .Distinct()
                 .ToList();
 
-            if (urls.Count == 0) return null;
+            if (!urls.Any()) return null;
 
-            var layoutData = new LayoutData();
-            layoutData.Add("QrCodeData", urls);
-            return layoutData;
+            return new { QrCodeData = urls };
         }
 
         private static IEnumerable<TocItem> Flatten(IEnumerable<TocItem> items)
