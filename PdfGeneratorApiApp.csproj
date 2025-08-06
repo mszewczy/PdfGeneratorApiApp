@@ -20,6 +20,10 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="nuget.config">
+		  <Generator>SettingsSingleFileGenerator</Generator>
+		  <LastGenOutput>nuget.Designer.cs</LastGenOutput>
+		</None>
 		<None Update="Resources\qr-code-template.dlex">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
@@ -27,6 +31,14 @@
 
 	<ItemGroup>
 		<Folder Include="Resources\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="nuget.Designer.cs">
+	    <DesignTimeSharedInput>True</DesignTimeSharedInput>
+	    <AutoGen>True</AutoGen>
+	    <DependentUpon>nuget.config</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 </Project>
