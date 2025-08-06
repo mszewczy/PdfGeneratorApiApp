@@ -1,31 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-
-	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<TargetFramework>net8.0-windows</TargetFramework>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<UseWPF>true</UseWPF>
-	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-		<PackageReference Include="Syncfusion.PdfViewer.WPF" Version="30.1.42" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Reference Include="DynamicPDF.API">
-	    <HintPath>..\dotnet-client\DynamicPDF.Api\bin\Release\netstandard2.0\DynamicPDF.Api.dll</HintPath>
-	  </Reference>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="DynamicPDF.API" />
+    <PackageReference Include="gong-wpf-dragdrop" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Syncfusion.PdfViewer.WPF" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
