@@ -36,7 +36,8 @@ namespace PdfGeneratorApiApp.Services
             {
                 var pageInput = new PageInput();
                 string content = $"To jest treść strony dla: '{item.DisplayText}'.\n\nURL: {item.Url}";
-                // POPRAWKA: Użycie pełnej nazwy typu 'DynamicPDF.Api.TextElement' i 'DynamicPDF.Api.ElementPlacement'
+
+                // POPRAWKA: Użycie pełnych nazw typów w celu rozwiązania problemów z ich odnalezieniem.
                 pageInput.Elements.Add(new DynamicPDF.Api.TextElement(content, DynamicPDF.Api.ElementPlacement.TopLeft, 54, 54));
                 itemToInputMap[item] = pageInput;
                 pageInputs.Add(pageInput);
@@ -55,7 +56,6 @@ namespace PdfGeneratorApiApp.Services
                 }
             }
 
-            // POPRAWKA: W API v1.11.0 instrukcje dodaje się bezpośrednio do obiektu Pdf, a nie do pdf.Instructions.
             // Faza 3: Złóż dokument w odpowiedniej kolejności.
             if (isTocAtStart && dlexInput != null)
             {
@@ -93,7 +93,6 @@ namespace PdfGeneratorApiApp.Services
             {
                 if (itemToInputMap.TryGetValue(item, out var targetInput))
                 {
-                    // POPRAWKA: W API v1.11.0 akcję GoToAction dodaje się bezpośrednio w metodzie Add
                     var outline = parentOutlines.Add(item.DisplayText, targetInput);
 
                     if (item.Children.Any())
