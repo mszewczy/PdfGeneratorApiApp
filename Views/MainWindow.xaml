@@ -53,6 +53,7 @@
                         </Grid.RowDefinitions>
                         <TextBlock Text="URL:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,5,0"/>
                         <TextBox Text="{Binding NewItemUrl, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1" Margin="0,2"/>
+
                         <TextBlock Text="Opis:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,5,0"/>
                         <TextBox Text="{Binding NewItemDisplayText, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" Grid.Column="1" Margin="0,2"/>
                     </Grid>
@@ -71,13 +72,13 @@
             </StackPanel>
 
             <TreeView ItemsSource="{Binding TocItems}"
-                      dd:DragDrop.IsDragSource="True"
-                      dd:DragDrop.IsDropTarget="True"
-                      dd:DragDrop.DropHandler="{Binding}"/>
+                      dd:DragDrop.DropHandler="{Binding}"
+                      AllowDrop="True"/>
         </DockPanel>
 
         <Border Grid.Column="1" BorderBrush="LightGray" BorderThickness="1">
-            <syncfusion:PdfViewerControl x:Name="pdfViewer"/>
+            <syncfusion:PdfViewerControl x:Name="pdfViewer" 
+                                          ItemSource="{Binding PdfDocumentStream}"/>
         </Border>
     </Grid>
 </Window>

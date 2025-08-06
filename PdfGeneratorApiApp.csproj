@@ -9,16 +9,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Użyto obligatoryjnych, stabilnych wersji pakietów NuGet -->
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-		<PackageReference Include="DynamicPDF.Api" Version="1.11.0" />
-		<PackageReference Include="gong-wpf-dragdrop" Version="3.2.1" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-		<PackageReference Include="Syncfusion.PdfViewer.WPF" Version="25.2.3" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+		<PackageReference Include="DynamicPDF.Api" />
+		<PackageReference Include="gong-wpf-dragdrop" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+		<PackageReference Include="Syncfusion.PdfViewer.WPF" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- Ten wpis zapewnia, że pliki będą kopiowane do katalogu wynikowego aplikacji -->
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
