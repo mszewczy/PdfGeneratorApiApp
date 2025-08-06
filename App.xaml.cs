@@ -17,8 +17,8 @@ namespace PdfGeneratorApiApp
 
             Configuration = builder.Build();
 
-            // POPRAWKA: Poprawne odczytywanie klucza jako string z konfiguracji
-            var syncfusionLicenseKey = Configuration;
+            // POPRAWKA: Prawidłowy sposób odczytywania konkretnego klucza z konfiguracji.
+            var syncfusionLicenseKey = Configuration["SyncfusionLicense"];
             if (!string.IsNullOrEmpty(syncfusionLicenseKey) && !syncfusionLicenseKey.Contains("WSTAW"))
             {
                 Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(syncfusionLicenseKey);
@@ -28,8 +28,8 @@ namespace PdfGeneratorApiApp
                 MessageBox.Show("Klucz licencyjny Syncfusion nie został znaleziony lub jest nieprawidłowy w pliku appsettings.json.", "Błąd Konfiguracji", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            // POPRAWKA: Poprawne odczytywanie klucza jako string z konfiguracji
-            var dynamicPdfApiKey = Configuration;
+            // POPRAWKA: Prawidłowy sposób odczytywania konkretnego klucza z konfiguracji.
+            var dynamicPdfApiKey = Configuration["DynamicPDFApiKey"];
             if (!string.IsNullOrEmpty(dynamicPdfApiKey) && !dynamicPdfApiKey.Contains("WSTAW"))
             {
                 DynamicPdfApiService.Initialize(dynamicPdfApiKey);
