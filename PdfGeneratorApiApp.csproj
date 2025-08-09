@@ -14,9 +14,8 @@
 		<PackageReference Include="gong-wpf-dragdrop" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
 		<PackageReference Include="Syncfusion.Pdf.Wpf" />
-		<PackageReference Include="Syncfusion.PdfViewer.WPF" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
