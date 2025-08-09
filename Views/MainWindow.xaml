@@ -7,7 +7,7 @@
         xmlns:models="clr-namespace:PdfGeneratorApiApp.Models"
         xmlns:converters="clr-namespace:PdfGeneratorApiApp.Converters"
         xmlns:syncfusion="clr-namespace:Syncfusion.Windows.PdfViewer;assembly=Syncfusion.PdfViewer.WPF"
-        xmlns:dd="http://gong-wpf-dragdrop.com/" 
+        xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
         mc:Ignorable="d"
         Title="PDF Generator (DynamicPDF.API)" Height="800" Width="1200"
         Closing="Window_Closing">
