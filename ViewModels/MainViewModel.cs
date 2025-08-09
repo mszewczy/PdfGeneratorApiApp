@@ -4,12 +4,11 @@ using GongSolutions.Wpf.DragDrop;
 using Microsoft.Win32;
 using PdfGeneratorApiApp.Models;
 using PdfGeneratorApiApp.Services;
+using Syncfusion.Pdf;
 using Syncfusion.Pdf.Parsing;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -38,15 +37,20 @@ namespace PdfGeneratorApiApp.ViewModels
         private bool _generateQrCodeTable = true;
 
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(GeneratePdfCommand))]
+        [NotifyCanExecuteChangedFor(nameof(GeneratePdfAsyncCommand))]
         private bool _isGenerating = false;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(AddSubItemCommand))]
+        [NotifyCanExecuteChangedFor(nameof(RemoveItemCommand))]
+        [NotifyCanExecuteChangedFor(nameof(StartEditItemCommand))]
         private TocItem? _selectedItem;
+
+        [ObservableProperty]
+        private bool _isDirty = false;
 
         public MainViewModel()
         {
-            // Usunięto domyślnie dodawane zakładki
         }
 
         [RelayCommand]
@@ -57,8 +61,11 @@ namespace PdfGeneratorApiApp.ViewModels
                 TocItems.Add(new TocItem { Url = NewItemUrl, DisplayText = NewItemDisplayText });
                 NewItemUrl = string.Empty;
                 NewItemDisplayText = string.Empty;
+                IsDirty = true;
             }
         }
+
+        private bool CanAddSubItem() => SelectedItem != null;
 
         [RelayCommand(CanExecute = nameof(CanAddSubItem))]
         private void AddSubItem()
@@ -68,10 +75,11 @@ namespace PdfGeneratorApiApp.ViewModels
                 var newItem = new TocItem { DisplayText = "Nowy Pod-element", Parent = SelectedItem };
                 SelectedItem.Children.Add(newItem);
                 SelectedItem.IsExpanded = true;
+                IsDirty = true;
             }
         }
 
-        private bool CanAddSubItem() => SelectedItem != null;
+        private bool CanRemoveItem() => SelectedItem != null;
 
         [RelayCommand(CanExecute = nameof(CanRemoveItem))]
         private void RemoveItem()
@@ -79,10 +87,9 @@ namespace PdfGeneratorApiApp.ViewModels
             if (SelectedItem != null)
             {
                 (SelectedItem.Parent?.Children ?? TocItems).Remove(SelectedItem);
+                IsDirty = true;
             }
         }
-        private bool CanRemoveItem() => SelectedItem != null;
-
 
         [RelayCommand]
         private void StartEditItem()
@@ -102,7 +109,6 @@ namespace PdfGeneratorApiApp.ViewModels
             }
         }
 
-
         private bool CanGeneratePdf() => !IsGenerating;
 
         [RelayCommand(CanExecute = nameof(CanGeneratePdf))]
@@ -121,6 +127,7 @@ namespace PdfGeneratorApiApp.ViewModels
                 PdfDocumentStream?.Dispose();
                 PdfDocumentStream = await pdfService.GeneratePdfAsync(TocItems, IsTocAtStart, GenerateQrCodeTable, AddToc);
                 MessageBox.Show("Dokument PDF został wygenerowany pomyślnie.", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                IsDirty = false;
             }
             catch (Exception ex)
             {
@@ -150,11 +157,9 @@ namespace PdfGeneratorApiApp.ViewModels
                     TocItems.Clear();
                     LoadBookmarks(loadedDocument.Bookmarks, TocItems, null);
 
-                    // Aby wyświetlić podgląd PDF
                     PdfDocumentStream?.Dispose();
                     PdfDocumentStream = new MemoryStream(File.ReadAllBytes(openFileDialog.FileName));
-
-
+                    IsDirty = false;
                 }
                 catch (Exception ex)
                 {
@@ -163,20 +168,18 @@ namespace PdfGeneratorApiApp.ViewModels
             }
         }
 
-        private void LoadBookmarks(PdfLoadedBookmarkCollection loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
+        private void LoadBookmarks(PdfBookmarkCollection loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
         {
-            foreach (PdfLoadedBookmark loadedBookmark in loadedBookmarks)
+            foreach (IPdfBookmark loadedBookmark in loadedBookmarks)
             {
                 var tocItem = new TocItem
                 {
                     DisplayText = loadedBookmark.Title,
                     Parent = parent
-                    // Wczytywanie URL wymagałoby analizy akcji docelowej, co jest bardziej złożone.
-                    // Na razie zostawiamy URL puste.
                 };
 
                 tocItems.Add(tocItem);
-                LoadBookmarks(loadedBookmark, tocItem.Children, tocItem);
+                LoadBookmarks(loadedBookmark.InnerBookmarks, tocItem.Children, tocItem);
             }
         }
 
@@ -222,6 +225,7 @@ namespace PdfGeneratorApiApp.ViewModels
                 TocItems.Insert(insertIndex, sourceItem);
                 sourceItem.Parent = null;
             }
+            IsDirty = true;
         }
 
         private static bool IsDescendant(TocItem source, TocItem target)
