@@ -9,7 +9,8 @@
         xmlns:syncfusion="clr-namespace:Syncfusion.Windows.PdfViewer;assembly=Syncfusion.PdfViewer.WPF"
         xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
         mc:Ignorable="d"
-        Title="PDF Generator (DynamicPDF.API)" Height="800" Width="1200">
+        Title="PDF Generator (DynamicPDF.API)" Height="800" Width="1200"
+        Closing="Window_Closing">
     <Window.DataContext>
         <viewModels:MainViewModel/>
     </Window.DataContext>
@@ -20,14 +21,26 @@
 
         <HierarchicalDataTemplate DataType="{x:Type models:TocItem}" ItemsSource="{Binding Children}">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{Binding DisplayText}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <Grid>
+                    <TextBlock Text="{Binding DisplayText}" FontWeight="SemiBold" VerticalAlignment="Center" Visibility="{Binding IsEditing, Converter={StaticResource InvertBooleanConverter}}"/>
+                    <TextBox Text="{Binding DisplayText, UpdateSourceTrigger=PropertyChanged}" MinWidth="150" Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding DataContext.EndEditItemCommand, RelativeSource={RelativeSource AncestorType=TreeView}}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+                </Grid>
                 <TextBlock Text="{Binding Url, StringFormat=' ({0})'}" FontStyle="Italic" Foreground="Gray" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                <Button Content="Edytuj" Command="{Binding DataContext.StartEditItemCommand, RelativeSource={RelativeSource AncestorType=TreeView}}" Margin="5,0"/>
+                <Button Content="Usuń" Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=TreeView}}" Margin="5,0"/>
+
             </StackPanel>
         </HierarchicalDataTemplate>
+
 
         <Style TargetType="TreeViewItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
         </Style>
     </Window.Resources>
 
@@ -38,7 +51,11 @@
         </Grid.ColumnDefinitions>
 
         <DockPanel Grid.Column="0" Margin="0,0,10,0">
-            <TextBlock DockPanel.Dock="Top" Text="Hierarchia Zakładek" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
+                <TextBlock Text="Hierarchia Zakładek" FontWeight="Bold" FontSize="16"/>
+                <Button Content="Otwórz PDF" Command="{Binding OpenPdfCommand}" Margin="10,0,0,0"/>
+            </StackPanel>
+
 
             <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
                 <GroupBox Header="Dodaj nowy element (poziom główny)" Padding="5">
@@ -54,16 +71,19 @@
                         <TextBlock Text="URL:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,5,0"/>
                         <TextBox Text="{Binding NewItemUrl, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1" Margin="0,2"/>
 
+
                         <TextBlock Text="Opis:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,5,0"/>
                         <TextBox Text="{Binding NewItemDisplayText, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" Grid.Column="1" Margin="0,2"/>
                     </Grid>
                 </GroupBox>
                 <Button Content="Dodaj element" Command="{Binding AddItemCommand}" Margin="0,10,0,0"/>
+                <Button Content="Dodaj pod-element" Command="{Binding AddSubItemCommand}" IsEnabled="{Binding SelectedItem, Converter={StaticResource InvertBooleanConverter}}" Margin="0,5,0,0"/>
 
                 <GroupBox Header="Opcje generowania" Padding="5" Margin="0,15,0,0">
                     <StackPanel>
-                        <RadioButton Content="Spis treści na początku dokumentu" IsChecked="{Binding IsTocAtStart, Mode=TwoWay}" GroupName="TocPosition"/>
-                        <RadioButton Content="Spis treści na końcu dokumentu" IsChecked="{Binding IsTocAtStart, Converter={StaticResource InvertBooleanConverter}}" GroupName="TocPosition"/>
+                        <CheckBox Content="Generuj spis treści" IsChecked="{Binding AddToc}" Margin="0,0,0,10"/>
+                        <RadioButton Content="Spis treści na początku dokumentu" IsChecked="{Binding IsTocAtStart, Mode=TwoWay}" GroupName="TocPosition" IsEnabled="{Binding AddToc}"/>
+                        <RadioButton Content="Spis treści na końcu dokumentu" IsChecked="{Binding IsTocAtStart, Converter={StaticResource InvertBooleanConverter}}" GroupName="TocPosition" IsEnabled="{Binding AddToc}"/>
                         <CheckBox Content="Dołącz tabelę kodów QR dla linków" IsChecked="{Binding GenerateQrCodeTable}" Margin="0,10,0,0"/>
                     </StackPanel>
                 </GroupBox>
@@ -72,12 +92,15 @@
             </StackPanel>
 
             <TreeView ItemsSource="{Binding TocItems}"
+                      SelectedItemChanged="TreeView_SelectedItemChanged"
+                      dd:DragDrop.IsDragSource="True"
+                      dd:DragDrop.IsDropTarget="True"
                       dd:DragDrop.DropHandler="{Binding}"
                       AllowDrop="True"/>
         </DockPanel>
 
         <Border Grid.Column="1" BorderBrush="LightGray" BorderThickness="1">
-            <syncfusion:PdfViewerControl x:Name="pdfViewer" 
+            <syncfusion:PdfViewerControl x:Name="pdfViewer"
                                           ItemSource="{Binding PdfDocumentStream}"/>
         </Border>
     </Grid>

@@ -1,5 +1,5 @@
 ﻿using DynamicPDF.Api;
-using DynamicPDF.Api.Elements; // <--- DODANA LINIA
+using DynamicPDF.Api.Elements;
 using PdfGeneratorApiApp.Models;
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace PdfGeneratorApiApp.Services
             Pdf.DefaultApiKey = apiKey;
         }
 
-        public async Task<MemoryStream?> GeneratePdfAsync(ObservableCollection<TocItem> tocItems, bool isTocAtStart, bool generateQrCodeTable)
+        public async Task<MemoryStream?> GeneratePdfAsync(ObservableCollection<TocItem> tocItems, bool isTocAtStart, bool generateQrCodeTable, bool addToc)
         {
             if (string.IsNullOrEmpty(_apiKey))
             {
@@ -35,13 +35,14 @@ namespace PdfGeneratorApiApp.Services
             var pageInputs = new List<PageInput>();
             foreach (var item in Flatten(tocItems))
             {
-                var pageInput = new PageInput();
-                string content = $"To jest treść strony dla: '{item.DisplayText}'.\n\nURL: {item.Url}";
-
-                // POPRAWKA: Usunięto pełne kwalifikatory nazw i zastosowano poprawną przestrzeń nazw.
-                pageInput.Elements.Add(new TextElement(content, ElementPlacement.TopLeft, 54, 54)); // <--- ZMIENIONA LINIA
-                itemToInputMap[item] = pageInput;
-                pageInputs.Add(pageInput);
+                if (!string.IsNullOrEmpty(item.Url)) // Tylko strony z URL mają zawartość
+                {
+                    var pageInput = new PageInput();
+                    string content = $"To jest treść strony dla: '{item.DisplayText}'.\n\nURL: {item.Url}";
+                    pageInput.Elements.Add(new TextElement(content, ElementPlacement.TopLeft, 54, 54));
+                    itemToInputMap[item] = pageInput;
+                    pageInputs.Add(pageInput);
+                }
             }
 
             // Faza 2: (Opcjonalnie) Przygotuj DlexInput dla tabeli z kodami QR.
@@ -72,7 +73,11 @@ namespace PdfGeneratorApiApp.Services
             }
 
             // Faza 4: Rekurencyjnie zbuduj hierarchię zakładek (Outlines).
-            AddOutlinesRecursively(pdf.Outlines, tocItems, itemToInputMap);
+            if (addToc)
+            {
+                AddOutlinesRecursively(pdf.Outlines, tocItems, itemToInputMap);
+            }
+
 
             // Faza 5: Wyślij instrukcje do API i przetwórz odpowiedź.
             var response = await pdf.ProcessAsync();
@@ -96,6 +101,15 @@ namespace PdfGeneratorApiApp.Services
                 {
                     var outline = parentOutlines.Add(item.DisplayText, targetInput);
 
+                    if (item.Children.Any())
+                    {
+                        AddOutlinesRecursively(outline.Children, item.Children, itemToInputMap);
+                    }
+                }
+                else
+                {
+                    // Dodaj zakładkę bez powiązanej akcji (np. dla folderów)
+                    var outline = parentOutlines.Add(item.DisplayText);
                     if (item.Children.Any())
                     {
                         AddOutlinesRecursively(outline.Children, item.Children, itemToInputMap);
