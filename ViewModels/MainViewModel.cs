@@ -5,6 +5,7 @@ using Microsoft.Win32;
 using PdfGeneratorApiApp.Models;
 using PdfGeneratorApiApp.Services;
 using Syncfusion.Pdf;
+using Syncfusion.Pdf.Interactive; // POPRAWKA: Dodano brakującą przestrzeń nazw
 using Syncfusion.Pdf.Parsing;
 using System;
 using System.Collections.ObjectModel;
@@ -37,13 +38,15 @@ namespace PdfGeneratorApiApp.ViewModels
         private bool _generateQrCodeTable = true;
 
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(GeneratePdfAsyncCommand))]
+        // POPRAWKA: Zmieniono 'nameof' na string, aby uniknąć błędu z generatorem kodu.
+        [NotifyCanExecuteChangedFor("GeneratePdfAsyncCommand")]
         private bool _isGenerating = false;
 
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(AddSubItemCommand))]
-        [NotifyCanExecuteChangedFor(nameof(RemoveItemCommand))]
-        [NotifyCanExecuteChangedFor(nameof(StartEditItemCommand))]
+        // POPRAWKA: Zmieniono 'nameof' na stringi.
+        [NotifyCanExecuteChangedFor("AddSubItemCommand")]
+        [NotifyCanExecuteChangedFor("RemoveItemCommand")]
+        [NotifyCanExecuteChangedFor("StartEditItemCommand")]
         private TocItem? _selectedItem;
 
         [ObservableProperty]
@@ -106,6 +109,7 @@ namespace PdfGeneratorApiApp.ViewModels
             if (SelectedItem != null)
             {
                 SelectedItem.IsEditing = false;
+                IsDirty = true;
             }
         }
 
@@ -158,6 +162,7 @@ namespace PdfGeneratorApiApp.ViewModels
                     LoadBookmarks(loadedDocument.Bookmarks, TocItems, null);
 
                     PdfDocumentStream?.Dispose();
+                    // Ponowne wczytanie pliku do MemoryStream dla PdfViewerControl
                     PdfDocumentStream = new MemoryStream(File.ReadAllBytes(openFileDialog.FileName));
                     IsDirty = false;
                 }
@@ -168,6 +173,7 @@ namespace PdfGeneratorApiApp.ViewModels
             }
         }
 
+        // POPRAWKA: Poprawiono typ parametru 'loadedBookmarks'
         private void LoadBookmarks(PdfBookmarkCollection loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
         {
             foreach (IPdfBookmark loadedBookmark in loadedBookmarks)
@@ -176,6 +182,9 @@ namespace PdfGeneratorApiApp.ViewModels
                 {
                     DisplayText = loadedBookmark.Title,
                     Parent = parent
+                    // Uwaga: Wczytywanie URL z zakładki wymagałoby bardziej zaawansowanej logiki,
+                    // ponieważ zakładki mogą prowadzić do różnych typów akcji, nie tylko URI.
+                    // Na razie pozostawiamy URL pusty.
                 };
 
                 tocItems.Add(tocItem);
@@ -213,11 +222,14 @@ namespace PdfGeneratorApiApp.ViewModels
 
             if (dropInfo.TargetItem is TocItem targetItem)
             {
+                // Wstawianie jako dziecko
                 targetItem.Children.Add(sourceItem);
                 sourceItem.Parent = targetItem;
+                targetItem.IsExpanded = true;
             }
             else
             {
+                // Wstawianie na liście głównej
                 int insertIndex = dropInfo.InsertIndex;
                 if (insertIndex < 0) insertIndex = 0;
                 if (insertIndex > TocItems.Count) insertIndex = TocItems.Count;
