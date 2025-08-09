@@ -28,7 +28,7 @@
                     <TextBox Text="{Binding DisplayText, UpdateSourceTrigger=PropertyChanged}" MinWidth="150" Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Enter" Command="{Binding DataContext.EndEditItemCommand, RelativeSource={RelativeSource AncestorType=TreeView}}" CommandParameter="{Binding}"/>
-                            <KeyBinding Key="Escape" Command="{Binding DataContext.EndEditItemCommand, RelativeSource={RelativeSource AncestorType=TreeView}}" CommandParameter="{Binding}"/>
+                            <KeyBinding Key="Escape" Command="{Binding DataContext.EndEditItemCommand, RelativeSource={RelativeSource AncestorType=TreeView}}" CommandParameter="{Bindiing}"/>
                         </TextBox.InputBindings>
                     </TextBox>
                 </Grid>
@@ -109,10 +109,9 @@
             </StackPanel>
 
             <!-- Drzewo spisu treści -->
-            <!-- POPRAWKA: Zmieniono DropHandler na DataContext, aby pasowało do nowszej wersji GongSolutions.Wpf.DragDrop -->
+            <!-- POPRAWKA: Usunięto 'dd:DragDrop.DataContext', ponieważ w v3 nie jest już potrzebne. Biblioteka automatycznie użyje DataContext kontrolki. -->
             <TreeView ItemsSource="{Binding TocItems}"
                       SelectedItemChanged="TreeView_SelectedItemChanged"
-                      dd:DragDrop.DataContext="{Binding}"
                       dd:DragDrop.UseDefaultEffectDataTemplate="True"/>
         </DockPanel>
 
