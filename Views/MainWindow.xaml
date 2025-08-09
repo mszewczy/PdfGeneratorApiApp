@@ -28,7 +28,8 @@
                     <TextBox Text="{Binding DisplayText, UpdateSourceTrigger=PropertyChanged}" MinWidth="150" Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Enter" Command="{Binding DataContext.EndEditItemCommand, RelativeSource={RelativeSource AncestorType=TreeView}}" CommandParameter="{Binding}"/>
-                            <KeyBinding Key="Escape" Command="{Binding DataContext.EndEditItemCommand, RelativeSource={RelativeSource AncestorType=TreeView}}" CommandParameter="{Bindiing}"/>
+                            <!-- POPRAWKA: Poprawiono literówkę z "Bindiing" na "Binding" -->
+                            <KeyBinding Key="Escape" Command="{Binding DataContext.EndEditItemCommand, RelativeSource={RelativeSource AncestorType=TreeView}}" CommandParameter="{Binding}"/>
                         </TextBox.InputBindings>
                     </TextBox>
                 </Grid>
@@ -109,7 +110,6 @@
             </StackPanel>
 
             <!-- Drzewo spisu treści -->
-            <!-- POPRAWKA: Usunięto 'dd:DragDrop.DataContext', ponieważ w v3 nie jest już potrzebne. Biblioteka automatycznie użyje DataContext kontrolki. -->
             <TreeView ItemsSource="{Binding TocItems}"
                       SelectedItemChanged="TreeView_SelectedItemChanged"
                       dd:DragDrop.UseDefaultEffectDataTemplate="True"/>
