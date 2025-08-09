@@ -4,8 +4,7 @@ using GongSolutions.Wpf.DragDrop;
 using Microsoft.Win32;
 using PdfGeneratorApiApp.Models;
 using PdfGeneratorApiApp.Services;
-using Syncfusion.Pdf;
-using Syncfusion.Pdf.Interactive; // POPRAWKA: Dodano brakującą przestrzeń nazw
+using Syncfusion.Pdf.Interactive; // POPRAWKA: Dodano brakującą przestrzeń nazw dla PdfBookmarkCollection i IPdfBookmark.
 using Syncfusion.Pdf.Parsing;
 using System;
 using System.Collections.ObjectModel;
@@ -38,15 +37,14 @@ namespace PdfGeneratorApiApp.ViewModels
         private bool _generateQrCodeTable = true;
 
         [ObservableProperty]
-        // POPRAWKA: Zmieniono 'nameof' na string, aby uniknąć błędu z generatorem kodu.
-        [NotifyCanExecuteChangedFor("GeneratePdfAsyncCommand")]
+        // USUNIĘTO: Atrybut [NotifyCanExecuteChangedFor] był zbędny.
+        // CommunityToolkit.Mvvm automatycznie powiadamia o zmianie CanExecute,
+        // ponieważ metoda CanGeneratePdf() zależy od właściwości IsGenerating.
         private bool _isGenerating = false;
 
         [ObservableProperty]
-        // POPRAWKA: Zmieniono 'nameof' na stringi.
-        [NotifyCanExecuteChangedFor("AddSubItemCommand")]
-        [NotifyCanExecuteChangedFor("RemoveItemCommand")]
-        [NotifyCanExecuteChangedFor("StartEditItemCommand")]
+        // USUNIĘTO: Atrybuty [NotifyCanExecuteChangedFor] były zbędne z tego samego powodu co powyżej.
+        // Metody CanExecute dla komend (np. CanAddSubItem) zależą od właściwości SelectedItem.
         private TocItem? _selectedItem;
 
         [ObservableProperty]
@@ -94,7 +92,9 @@ namespace PdfGeneratorApiApp.ViewModels
             }
         }
 
-        [RelayCommand]
+        private bool CanStartEditItem() => SelectedItem != null;
+
+        [RelayCommand(CanExecute = nameof(CanStartEditItem))]
         private void StartEditItem()
         {
             if (SelectedItem != null)
@@ -159,6 +159,7 @@ namespace PdfGeneratorApiApp.ViewModels
                     var loadedDocument = new PdfLoadedDocument(fileStream);
 
                     TocItems.Clear();
+                    // POPRAWKA: Używamy właściwości Bookmarks, która jest typu PdfBookmarkCollection.
                     LoadBookmarks(loadedDocument.Bookmarks, TocItems, null);
 
                     PdfDocumentStream?.Dispose();
@@ -173,7 +174,6 @@ namespace PdfGeneratorApiApp.ViewModels
             }
         }
 
-        // POPRAWKA: Poprawiono typ parametru 'loadedBookmarks'
         private void LoadBookmarks(PdfBookmarkCollection loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
         {
             foreach (IPdfBookmark loadedBookmark in loadedBookmarks)
@@ -188,7 +188,10 @@ namespace PdfGeneratorApiApp.ViewModels
                 };
 
                 tocItems.Add(tocItem);
-                LoadBookmarks(loadedBookmark.InnerBookmarks, tocItem.Children, tocItem);
+                if (loadedBookmark.InnerBookmarks.Count > 0)
+                {
+                    LoadBookmarks(loadedBookmark.InnerBookmarks, tocItem.Children, tocItem);
+                }
             }
         }
 
