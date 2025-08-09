@@ -6,6 +6,7 @@ using PdfGeneratorApiApp.Models;
 using PdfGeneratorApiApp.Services;
 using Syncfusion.Pdf.Parsing;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
@@ -154,11 +155,9 @@ namespace PdfGeneratorApiApp.ViewModels
                     var loadedDocument = new PdfLoadedDocument(fileStream);
 
                     TocItems.Clear();
-                    // POPRAWKA: Używamy właściwości Bookmarks, która jest typu PdfLoadedBookmarkCollection.
                     LoadBookmarks(loadedDocument.Bookmarks, TocItems, null);
 
                     PdfDocumentStream?.Dispose();
-                    // Ponowne wczytanie pliku do MemoryStream dla PdfViewerControl
                     PdfDocumentStream = new MemoryStream(fileBytes);
                     IsDirty = false;
                 }
@@ -170,22 +169,19 @@ namespace PdfGeneratorApiApp.ViewModels
         }
 
         /// <summary>
-        /// POPRAWKA: Metoda została zaktualizowana, aby używać prawidłowego typu 'PdfLoadedBookmarkCollection'
-        /// do rekurencyjnego wczytywania zakładek z istniejącego dokumentu PDF, zgodnie z API Syncfusion v26.1.35.
+        /// POPRAWKA: Metoda została zaktualizowana, aby używać generycznego interfejsu IEnumerable<PdfLoadedBookmark>
+        /// zamiast konkretnej klasy kolekcji, co jest bardziej elastyczne i rozwiązuje problem z odwołaniem do typu.
         /// </summary>
-        private void LoadBookmarks(PdfLoadedBookmarkCollection loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
+        private void LoadBookmarks(IEnumerable<PdfLoadedBookmark> loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
         {
-            if (loadedBookmarks == null || loadedBookmarks.Count == 0) return;
+            if (loadedBookmarks == null) return;
 
-            foreach (PdfLoadedBookmark loadedBookmark in loadedBookmarks)
+            foreach (var loadedBookmark in loadedBookmarks)
             {
                 var tocItem = new TocItem
                 {
                     DisplayText = loadedBookmark.Title,
                     Parent = parent
-                    // Uwaga: Wczytywanie URL z zakładki wymagałoby bardziej zaawansowanej logiki,
-                    // ponieważ zakładki mogą prowadzić do różnych typów akcji, nie tylko URI.
-                    // Na razie pozostawiamy URL pusty.
                 };
 
                 tocItems.Add(tocItem);
@@ -227,14 +223,12 @@ namespace PdfGeneratorApiApp.ViewModels
 
             if (dropInfo.TargetItem is TocItem targetItem)
             {
-                // Wstawianie jako dziecko
                 targetItem.Children.Add(sourceItem);
                 sourceItem.Parent = targetItem;
                 targetItem.IsExpanded = true;
             }
             else
             {
-                // Wstawianie na liście głównej
                 int insertIndex = dropInfo.InsertIndex;
                 if (insertIndex < 0) insertIndex = 0;
                 if (insertIndex > TocItems.Count) insertIndex = TocItems.Count;
