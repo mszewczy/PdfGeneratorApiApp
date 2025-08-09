@@ -62,8 +62,8 @@
 
                 <GroupBox Header="Opcje generowania" Padding="5" Margin="0,15,0,0">
                     <StackPanel>
-                        <RadioButton Content="Spis treści na początku dokumentu" IsChecked="{Binding IsTocAtStart}" GroupName="TocPosition"/>
-                        <RadioButton Content="Spis treści na końcu dokumentu" GroupName="TocPosition"/>
+                        <RadioButton Content="Spis treści na początku dokumentu" IsChecked="{Binding IsTocAtStart, Mode=TwoWay}" GroupName="TocPosition"/>
+                        <RadioButton Content="Spis treści na końcu dokumentu" IsChecked="{Binding IsTocAtStart, Converter={StaticResource InvertBooleanConverter}}" GroupName="TocPosition"/>
                         <CheckBox Content="Dołącz tabelę kodów QR dla linków" IsChecked="{Binding GenerateQrCodeTable}" Margin="0,10,0,0"/>
                     </StackPanel>
                 </GroupBox>

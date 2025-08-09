@@ -1,4 +1,5 @@
 ﻿using DynamicPDF.Api;
+using DynamicPDF.Api.Elements; // <--- DODANA LINIA
 using PdfGeneratorApiApp.Models;
 using System;
 using System.Collections.Generic;
@@ -37,8 +38,8 @@ namespace PdfGeneratorApiApp.Services
                 var pageInput = new PageInput();
                 string content = $"To jest treść strony dla: '{item.DisplayText}'.\n\nURL: {item.Url}";
 
-                // POPRAWKA: Użycie pełnych nazw typów w celu rozwiązania problemów z ich odnalezieniem.
-                pageInput.Elements.Add(new DynamicPDF.Api.TextElement(content, DynamicPDF.Api.ElementPlacement.TopLeft, 54, 54));
+                // POPRAWKA: Usunięto pełne kwalifikatory nazw i zastosowano poprawną przestrzeń nazw.
+                pageInput.Elements.Add(new TextElement(content, ElementPlacement.TopLeft, 54, 54)); // <--- ZMIENIONA LINIA
                 itemToInputMap[item] = pageInput;
                 pageInputs.Add(pageInput);
             }
