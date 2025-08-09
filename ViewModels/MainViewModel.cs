@@ -154,7 +154,7 @@ namespace PdfGeneratorApiApp.ViewModels
                     var loadedDocument = new PdfLoadedDocument(fileStream);
 
                     TocItems.Clear();
-                    // POPRAWKA: Używamy właściwości Bookmarks, która jest typu PdfLoadedBookmarkBase.
+                    // POPRAWKA: Używamy właściwości Bookmarks, która jest typu PdfLoadedBookmarkCollection.
                     LoadBookmarks(loadedDocument.Bookmarks, TocItems, null);
 
                     PdfDocumentStream?.Dispose();
@@ -170,15 +170,14 @@ namespace PdfGeneratorApiApp.ViewModels
         }
 
         /// <summary>
-        /// POPRAWKA: Metoda została zaktualizowana, aby używać prawidłowego typu 'PdfLoadedBookmarkBase'
-        /// oraz 'PdfLoadedBookmarkNodeCollection' do rekurencyjnego wczytywania zakładek z istniejącego dokumentu PDF.
+        /// POPRAWKA: Metoda została zaktualizowana, aby używać prawidłowego typu 'PdfLoadedBookmarkCollection'
+        /// do rekurencyjnego wczytywania zakładek z istniejącego dokumentu PDF, zgodnie z API Syncfusion v26.1.35.
         /// </summary>
-        private void LoadBookmarks(PdfLoadedBookmarkBase loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
+        private void LoadBookmarks(PdfLoadedBookmarkCollection loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
         {
-            // Sprawdzamy, czy węzeł ma dzieci (w nowej wersji API)
-            if (loadedBookmarks is not PdfLoadedBookmarkNodeCollection bookmarkNodes) return;
+            if (loadedBookmarks == null || loadedBookmarks.Count == 0) return;
 
-            foreach (PdfLoadedBookmark loadedBookmark in bookmarkNodes)
+            foreach (PdfLoadedBookmark loadedBookmark in loadedBookmarks)
             {
                 var tocItem = new TocItem
                 {
