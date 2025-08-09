@@ -4,6 +4,7 @@ using GongSolutions.Wpf.DragDrop;
 using Microsoft.Win32;
 using PdfGeneratorApiApp.Models;
 using PdfGeneratorApiApp.Services;
+using Syncfusion.Pdf.Interactive;
 using Syncfusion.Pdf.Parsing;
 using System;
 using System.Collections.Generic;
