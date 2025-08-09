@@ -109,9 +109,10 @@
             </StackPanel>
 
             <!-- Drzewo spisu treści -->
+            <!-- POPRAWKA: Zmieniono DropHandler na DataContext, aby pasowało do nowszej wersji GongSolutions.Wpf.DragDrop -->
             <TreeView ItemsSource="{Binding TocItems}"
                       SelectedItemChanged="TreeView_SelectedItemChanged"
-                      dd:DragDrop.DropHandler="{Binding}"
+                      dd:DragDrop.DataContext="{Binding}"
                       dd:DragDrop.UseDefaultEffectDataTemplate="True"/>
         </DockPanel>
 

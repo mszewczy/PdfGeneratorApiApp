@@ -154,7 +154,7 @@ namespace PdfGeneratorApiApp.ViewModels
                     var loadedDocument = new PdfLoadedDocument(fileStream);
 
                     TocItems.Clear();
-                    // POPRAWKA: Używamy właściwości Bookmarks, która jest typu PdfLoadedBookmarkCollection.
+                    // POPRAWKA: Używamy właściwości Bookmarks, która jest typu PdfLoadedBookmarkBase.
                     LoadBookmarks(loadedDocument.Bookmarks, TocItems, null);
 
                     PdfDocumentStream?.Dispose();
@@ -170,12 +170,15 @@ namespace PdfGeneratorApiApp.ViewModels
         }
 
         /// <summary>
-        /// POPRAWKA: Metoda została zaktualizowana, aby używać prawidłowego typu 'PdfLoadedBookmarkCollection'
-        /// oraz 'PdfLoadedBookmark' do rekurencyjnego wczytywania zakładek z istniejącego dokumentu PDF.
+        /// POPRAWKA: Metoda została zaktualizowana, aby używać prawidłowego typu 'PdfLoadedBookmarkBase'
+        /// oraz 'PdfLoadedBookmarkNodeCollection' do rekurencyjnego wczytywania zakładek z istniejącego dokumentu PDF.
         /// </summary>
-        private void LoadBookmarks(PdfLoadedBookmarkCollection loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
+        private void LoadBookmarks(PdfLoadedBookmarkBase loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
         {
-            foreach (PdfLoadedBookmark loadedBookmark in loadedBookmarks)
+            // Sprawdzamy, czy węzeł ma dzieci (w nowej wersji API)
+            if (loadedBookmarks is not PdfLoadedBookmarkNodeCollection bookmarkNodes) return;
+
+            foreach (PdfLoadedBookmark loadedBookmark in bookmarkNodes)
             {
                 var tocItem = new TocItem
                 {
@@ -187,12 +190,13 @@ namespace PdfGeneratorApiApp.ViewModels
                 };
 
                 tocItems.Add(tocItem);
-                if (loadedBookmark.InnerBookmarks != null && loadedBookmark.InnerBookmarks.Count > 0)
+                if (loadedBookmark.ChildNodes != null && loadedBookmark.ChildNodes.Count > 0)
                 {
-                    LoadBookmarks(loadedBookmark.InnerBookmarks, tocItem.Children, tocItem);
+                    LoadBookmarks(loadedBookmark.ChildNodes, tocItem.Children, tocItem);
                 }
             }
         }
+
 
         #region Implementacja IDropTarget
         public void DragOver(IDropInfo dropInfo)
