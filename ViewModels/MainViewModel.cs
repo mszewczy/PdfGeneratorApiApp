@@ -4,7 +4,6 @@ using GongSolutions.Wpf.DragDrop;
 using Microsoft.Win32;
 using PdfGeneratorApiApp.Models;
 using PdfGeneratorApiApp.Services;
-using Syncfusion.Pdf.Interactive; // POPRAWKA: Dodano brakującą przestrzeń nazw dla PdfBookmarkCollection i IPdfBookmark.
 using Syncfusion.Pdf.Parsing;
 using System;
 using System.Collections.ObjectModel;
@@ -37,14 +36,9 @@ namespace PdfGeneratorApiApp.ViewModels
         private bool _generateQrCodeTable = true;
 
         [ObservableProperty]
-        // USUNIĘTO: Atrybut [NotifyCanExecuteChangedFor] był zbędny.
-        // CommunityToolkit.Mvvm automatycznie powiadamia o zmianie CanExecute,
-        // ponieważ metoda CanGeneratePdf() zależy od właściwości IsGenerating.
         private bool _isGenerating = false;
 
         [ObservableProperty]
-        // USUNIĘTO: Atrybuty [NotifyCanExecuteChangedFor] były zbędne z tego samego powodu co powyżej.
-        // Metody CanExecute dla komend (np. CanAddSubItem) zależą od właściwości SelectedItem.
         private TocItem? _selectedItem;
 
         [ObservableProperty]
@@ -155,16 +149,17 @@ namespace PdfGeneratorApiApp.ViewModels
             {
                 try
                 {
-                    var fileStream = new FileStream(openFileDialog.FileName, FileMode.Open, FileAccess.Read);
+                    var fileBytes = File.ReadAllBytes(openFileDialog.FileName);
+                    using var fileStream = new MemoryStream(fileBytes);
                     var loadedDocument = new PdfLoadedDocument(fileStream);
 
                     TocItems.Clear();
-                    // POPRAWKA: Używamy właściwości Bookmarks, która jest typu PdfBookmarkCollection.
+                    // POPRAWKA: Używamy właściwości Bookmarks, która jest typu PdfLoadedBookmarkCollection.
                     LoadBookmarks(loadedDocument.Bookmarks, TocItems, null);
 
                     PdfDocumentStream?.Dispose();
                     // Ponowne wczytanie pliku do MemoryStream dla PdfViewerControl
-                    PdfDocumentStream = new MemoryStream(File.ReadAllBytes(openFileDialog.FileName));
+                    PdfDocumentStream = new MemoryStream(fileBytes);
                     IsDirty = false;
                 }
                 catch (Exception ex)
@@ -174,9 +169,13 @@ namespace PdfGeneratorApiApp.ViewModels
             }
         }
 
-        private void LoadBookmarks(PdfBookmarkCollection loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
+        /// <summary>
+        /// POPRAWKA: Metoda została zaktualizowana, aby używać prawidłowego typu 'PdfLoadedBookmarkCollection'
+        /// oraz 'PdfLoadedBookmark' do rekurencyjnego wczytywania zakładek z istniejącego dokumentu PDF.
+        /// </summary>
+        private void LoadBookmarks(PdfLoadedBookmarkCollection loadedBookmarks, ObservableCollection<TocItem> tocItems, TocItem? parent)
         {
-            foreach (IPdfBookmark loadedBookmark in loadedBookmarks)
+            foreach (PdfLoadedBookmark loadedBookmark in loadedBookmarks)
             {
                 var tocItem = new TocItem
                 {
@@ -188,7 +187,7 @@ namespace PdfGeneratorApiApp.ViewModels
                 };
 
                 tocItems.Add(tocItem);
-                if (loadedBookmark.InnerBookmarks.Count > 0)
+                if (loadedBookmark.InnerBookmarks != null && loadedBookmark.InnerBookmarks.Count > 0)
                 {
                     LoadBookmarks(loadedBookmark.InnerBookmarks, tocItem.Children, tocItem);
                 }
