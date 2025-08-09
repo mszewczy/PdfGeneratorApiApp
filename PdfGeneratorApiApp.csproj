@@ -13,7 +13,7 @@
 		<PackageReference Include="DynamicPDF.Api" />
 		<PackageReference Include="gong-wpf-dragdrop" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
-		<PackageReference Include="Syncfusion.PdfViewer.WPF" />
+		<PackageReference Include="Syncfusion.Pdf.Wpf" />
 	</ItemGroup>
 
 	<ItemGroup>
