@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Launch (console)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/MyApp.Cli/bin/Debug/net8.0/MyApp.Cli.dll",
+      "cwd": "${workspaceFolder}/src/MyApp.Cli",
+      "console": "integratedTerminal"
+    }
+  ]
+}

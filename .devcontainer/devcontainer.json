@@ -1,0 +1,16 @@
+{
+  "name": ".NET 8 Dev",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-vscode.test-adapter-converter",
+        "eamodio.gitlens",
+        "JakubKozera.csharp-dev-tools"
+      ]
+    }
+  },
+  "postCreateCommand": "dotnet --info && dotnet restore"
+}

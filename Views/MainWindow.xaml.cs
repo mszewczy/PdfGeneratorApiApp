@@ -21,21 +21,31 @@ namespace PdfGeneratorApiApp.Views
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (DataContext is MainViewModel { IsDirty: true } viewModel)
+            if (DataContext is MainViewModel viewModel)
             {
-                var result = MessageBox.Show("Czy chcesz zapisać zmiany w pliku PDF?", "Zapisz zmiany", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.Yes)
+                if (viewModel.IsDirty)
                 {
-                    // Użyj istniejącej komendy do generowania/zapisu PDF
-                    if (viewModel.GeneratePdfAsyncCommand.CanExecute(null))
+                    var result = MessageBox.Show("Czy chcesz zapisać zmiany w pliku PDF?", "Zapisz zmiany", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Yes)
                     {
-                        viewModel.GeneratePdfAsyncCommand.Execute(null);
+                        // Użyj istniejącej komendy do generowania/zapisu PDF
+                        if (viewModel.GeneratePdfAsyncCommand.CanExecute(null))
+                        {
+                            viewModel.GeneratePdfAsyncCommand.Execute(null);
+                        }
+                    }
+                    else if (result == MessageBoxResult.Cancel)
+                    {
+                        e.Cancel = true;
+                        return;
                     }
                 }
-                else if (result == MessageBoxResult.Cancel)
+
+                // POPRAWKA: Dodano prawidłowe zarządzanie zasobami przez wywołanie Dispose()
+                if (!e.Cancel)
                 {
-                    e.Cancel = true;
+                    viewModel.Dispose();
                 }
             }
         }

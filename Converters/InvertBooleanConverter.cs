@@ -17,7 +17,12 @@ namespace PdfGeneratorApiApp.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            // POPRAWKA: Implementacja ConvertBack dla pełnej funkcjonalności konwertera
+            if (value is bool booleanValue)
+            {
+                return !booleanValue;
+            }
+            return false;
         }
     }
 }

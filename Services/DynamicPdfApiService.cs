@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -29,10 +30,12 @@ namespace PdfGeneratorApiApp.Services
             }
 
             var pdf = new Pdf();
-            var itemToInputMap = new Dictionary<TocItem, Input>();
+            // POPRAWKA: Użycie collection expressions dla .NET 8
+            Dictionary<TocItem, Input> itemToInputMap = [];
 
             // Faza 1: Utwórz wszystkie strony z treścią jako PageInput.
-            var pageInputs = new List<PageInput>();
+            // POPRAWKA: Użycie collection expressions dla .NET 8
+            List<PageInput> pageInputs = [];
             foreach (var item in Flatten(tocItems))
             {
                 if (!string.IsNullOrEmpty(item.Url)) // Tylko strony z URL mają zawartość
@@ -53,7 +56,13 @@ namespace PdfGeneratorApiApp.Services
                 if (layoutData != null)
                 {
                     var dlexResource = new DlexResource("Resources/qr-code-template.dlex");
-                    var layoutDataResource = new LayoutDataResource(JsonSerializer.Serialize(layoutData));
+                    // POPRAWKA: Dodano opcje serializacji JSON dla lepszej wydajności i zgodności z .NET 8
+                    var jsonOptions = new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        WriteIndented = false
+                    };
+                    var layoutDataResource = new LayoutDataResource(JsonSerializer.Serialize(layoutData, jsonOptions));
                     dlexInput = new DlexInput(dlexResource, layoutDataResource);
                 }
             }
@@ -80,7 +89,8 @@ namespace PdfGeneratorApiApp.Services
 
 
             // Faza 5: Wyślij instrukcje do API i przetwórz odpowiedź.
-            var response = await pdf.ProcessAsync();
+            // POPRAWKA: Dodano ConfigureAwait(false) dla lepszej wydajności w kontekście biblioteki
+            var response = await pdf.ProcessAsync().ConfigureAwait(false);
 
             if (response.IsSuccessful)
             {
@@ -89,7 +99,8 @@ namespace PdfGeneratorApiApp.Services
             else
             {
                 Console.WriteLine(response.ErrorJson);
-                throw new Exception($"Błąd API DynamicPDF: {response.ErrorId} - {response.ErrorMessage}");
+                // POPRAWKA: Użycie bardziej specyficznego typu wyjątku dla błędów HTTP API
+                throw new HttpRequestException($"Błąd API DynamicPDF: {response.ErrorId} - {response.ErrorMessage}");
             }
         }
 

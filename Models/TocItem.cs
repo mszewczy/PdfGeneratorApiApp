@@ -24,13 +24,9 @@ namespace PdfGeneratorApiApp.Models
         [JsonIgnore]
         public TocItem? Parent { get; set; }
 
-        private bool _isSelected;
+        [ObservableProperty]
         [JsonIgnore]
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set => SetProperty(ref _isSelected, value);
-        }
+        private bool _isSelected;
 
     }
 }
