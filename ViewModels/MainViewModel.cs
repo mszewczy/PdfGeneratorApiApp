@@ -15,7 +15,7 @@ using System.Windows;
 
 namespace PdfGeneratorApiApp.ViewModels
 {
-    public partial class MainViewModel : ObservableObject, IDropTarget
+    public partial class MainViewModel : ObservableObject, IDropTarget, IDisposable
     {
         public ObservableCollection<TocItem> TocItems { get; } = new();
 
@@ -125,7 +125,8 @@ namespace PdfGeneratorApiApp.ViewModels
             {
                 var pdfService = new DynamicPdfApiService();
                 PdfDocumentStream?.Dispose();
-                PdfDocumentStream = await pdfService.GeneratePdfAsync(TocItems, IsTocAtStart, GenerateQrCodeTable, AddToc);
+                // POPRAWKA: Dodano ConfigureAwait(false) dla lepszej wydajności async/await
+                PdfDocumentStream = await pdfService.GeneratePdfAsync(TocItems, IsTocAtStart, GenerateQrCodeTable, AddToc).ConfigureAwait(false);
                 MessageBox.Show("Dokument PDF został wygenerowany pomyślnie.", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
                 IsDirty = false;
             }
@@ -249,6 +250,14 @@ namespace PdfGeneratorApiApp.ViewModels
                 current = current.Parent;
             }
             return false;
+        }
+        #endregion
+
+        #region IDisposable Implementation
+        public void Dispose()
+        {
+            PdfDocumentStream?.Dispose();
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

@@ -53,7 +53,13 @@ namespace PdfGeneratorApiApp.Services
                 if (layoutData != null)
                 {
                     var dlexResource = new DlexResource("Resources/qr-code-template.dlex");
-                    var layoutDataResource = new LayoutDataResource(JsonSerializer.Serialize(layoutData));
+                    // POPRAWKA: Dodano opcje serializacji JSON dla lepszej wydajności i zgodności z .NET 8
+                    var jsonOptions = new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        WriteIndented = false
+                    };
+                    var layoutDataResource = new LayoutDataResource(JsonSerializer.Serialize(layoutData, jsonOptions));
                     dlexInput = new DlexInput(dlexResource, layoutDataResource);
                 }
             }
@@ -80,7 +86,8 @@ namespace PdfGeneratorApiApp.Services
 
 
             // Faza 5: Wyślij instrukcje do API i przetwórz odpowiedź.
-            var response = await pdf.ProcessAsync();
+            // POPRAWKA: Dodano ConfigureAwait(false) dla lepszej wydajności w kontekście biblioteki
+            var response = await pdf.ProcessAsync().ConfigureAwait(false);
 
             if (response.IsSuccessful)
             {

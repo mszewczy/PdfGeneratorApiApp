@@ -11,9 +11,11 @@ namespace PdfGeneratorApiApp
 
         public App()
         {
+            // POPRAWKA: Użycie bardziej nowoczesnego wzorca konfiguracji dla .NET 8.0
             var builder = new ConfigurationBuilder()
-             .SetBasePath(Directory.GetCurrentDirectory())
-             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables(); // Dodanie wsparcia dla zmiennych środowiskowych zgodnie z .NET 8.0 best practices
 
             Configuration = builder.Build();
 

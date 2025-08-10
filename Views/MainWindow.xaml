@@ -120,7 +120,7 @@
         <!-- Prawy panel z podglądem PDF -->
         <Border Grid.Column="2" BorderBrush="LightGray" BorderThickness="1">
             <syncfusion:PdfViewerControl x:Name="pdfViewer"
-                                          ItemSource="{Binding PdfDocumentStream}"/>
+                                          DocumentSource="{Binding PdfDocumentStream}"/>
         </Border>
     </Grid>
 </Window>
