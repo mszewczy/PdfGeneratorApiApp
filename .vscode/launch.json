@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug PdfGeneratorApiApp",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/Debug/net8.0-windows/PdfGeneratorApiApp.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "internalConsole",
+      "preLaunchTask": "build"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "programPath",
+      "type": "promptString",
+      "description": "Path to the compiled executable",
+      "default": "${workspaceFolder}/bin/Debug/net8.0-windows/PdfGeneratorApiApp.exe"
+    }
+  ]
+}
