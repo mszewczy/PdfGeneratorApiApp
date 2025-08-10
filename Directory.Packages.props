@@ -1,16 +1,15 @@
 <Project>
-	<PropertyGroup>
-		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-		<CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-		<NoWarn>$(NoWarn);NU1507</NoWarn>
-	</PropertyGroup>
-	<ItemGroup>
-		<!-- POPRAWKA: Zaktualizowano wersje pakietów do najnowszych stabilnych wersji kompatybilnych z .NET 8 -->
-		<PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-		<PackageVersion Include="DynamicPDF.API" Version="1.11.0" />
-		<PackageVersion Include="gong-wpf-dragdrop" Version="3.2.1" />
-		<PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-		<PackageVersion Include="Syncfusion.Pdf.Wpf" Version="26.1.35" />
-		<PackageVersion Include="Syncfusion.PdfViewer.WPF" Version="26.1.35" />
-	</ItemGroup>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- POPRAWKA: Zaktualizowano wersje pakietów do najnowszych stabilnych wersji kompatybilnych z .NET 8 -->
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageVersion Include="DynamicPDF.API" Version="1.11.0" />
+    <PackageVersion Include="gong-wpf-dragdrop" Version="3.2.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageVersion Include="Syncfusion.Pdf.Wpf" Version="26.1.35" />
+    <PackageVersion Include="Syncfusion.PdfViewer.WPF" Version="26.1.35" />
+  </ItemGroup>
 </Project>
