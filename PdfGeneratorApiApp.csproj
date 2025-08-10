@@ -10,7 +10,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" />
-		<PackageReference Include="DynamicPDF.Api" />
+		<PackageReference Include="DynamicPDF.API" />
 		<PackageReference Include="gong-wpf-dragdrop" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" />
 		<PackageReference Include="Syncfusion.Pdf.Wpf" />
