@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -29,10 +30,12 @@ namespace PdfGeneratorApiApp.Services
             }
 
             var pdf = new Pdf();
-            var itemToInputMap = new Dictionary<TocItem, Input>();
+            // POPRAWKA: Użycie collection expressions dla .NET 8
+            Dictionary<TocItem, Input> itemToInputMap = [];
 
             // Faza 1: Utwórz wszystkie strony z treścią jako PageInput.
-            var pageInputs = new List<PageInput>();
+            // POPRAWKA: Użycie collection expressions dla .NET 8
+            List<PageInput> pageInputs = [];
             foreach (var item in Flatten(tocItems))
             {
                 if (!string.IsNullOrEmpty(item.Url)) // Tylko strony z URL mają zawartość
@@ -96,7 +99,8 @@ namespace PdfGeneratorApiApp.Services
             else
             {
                 Console.WriteLine(response.ErrorJson);
-                throw new Exception($"Błąd API DynamicPDF: {response.ErrorId} - {response.ErrorMessage}");
+                // POPRAWKA: Użycie bardziej specyficznego typu wyjątku dla błędów HTTP API
+                throw new HttpRequestException($"Błąd API DynamicPDF: {response.ErrorId} - {response.ErrorMessage}");
             }
         }
 
